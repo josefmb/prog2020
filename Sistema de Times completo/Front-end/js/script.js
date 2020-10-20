@@ -17,6 +17,8 @@ $(function () {
                         <td>${time.id}</td> 
                         <td>${time.nome}</td> 
                         <td>${time.esporte}</td> 
+                        <td><a href=# id="${time.id}" class="excluirTime">
+                            <p class="badge badge-danger">Excluir</p> </a> </td>
                       </tr>`;
 
             $('#tableTimeBody').append(linha_atual);
@@ -28,7 +30,7 @@ $(function () {
         nameTime = $("#nameTime").val();
         nameSport = $("#nameSport").val();
         // preparar os dados para envio(json)
-        var dados = JSON.stringify({nome: nameTime, esporte: nameSport});
+        let dados = JSON.stringify({nome: nameTime, esporte: nameSport});
         // enviar para o Beck-end
         $.ajax({
             url: 'http://localhost:5000/incluir_times',
@@ -51,6 +53,31 @@ $(function () {
         }
         function erroIncluirTime(resposta) {
             alert("Não deu certo pra incluir no backend");
+        }
+    });
+
+    $(document).on("click", ".excluirTime", function() {
+        let IdTime = $(this).attr("id");
+    
+        $.ajax({
+          url: `http://localhost:5000/excluir_time/${IdTime}`,
+          type: "DELETE",
+          dataType: 'json',
+          success: excluirTime,
+          error: erroExcluirTime
+        });
+    
+        function excluirTime(retorno) {
+          if (retorno.resultado === "ok") {
+            $(`#linha_${IdTime}`).fadeOut(1000, () => {
+                alert("Time excluído com êxito!")
+            });
+          } else {
+            alert(`Algo deu errado: ${retorno.resultado}: ${retorno.detalhes}`);
+          }
+        };
+        function erroExcluirTime(retorno) {
+            alert("Não deu certo para excluir o Time");
         }
     });
 });
