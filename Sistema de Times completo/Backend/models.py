@@ -1,10 +1,51 @@
 from config import *
 
+class Tecnico(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(254))
+
+    contrato = db.relationship("Time", back_populates="tecnico")
+
+    def __str__(self):
+        return str(self.id)+") "+ self.nome
+
+    #Método que transforma a classe em json
+    def json(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+        }
+
+
+class Auxiliar(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(254))
+
+    contrato = db.relationship("Time", back_populates="auxiliar")
+
+    def __str__(self):
+        return str(self.id)+") "+ self.nome
+
+    #Método que transforma a classe em json
+    def json(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+        }
+
 class Time(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(254))
     esporte = db.Column(db.String(254))
+
+    tecnico_id = db.Column(db.ForeignKey(Tecnico.id), nullable=False)
+    tecnico = db.relationship("Tecnico", back_populates="contrato")
+
+    auxiliar_id = db.Column(db.ForeignKey(Auxiliar.id), nullable=False)
+    auxiliar = db.relationship("Auxiliar", back_populates="contrato")
     #Método para expressar o time em formto texto
     
     def __str__(self):
@@ -15,8 +56,13 @@ class Time(db.Model):
         return {
             "id": self.id,
             "nome": self.nome,
-            "esporte": self.esporte
+            "esporte": self.esporte,
+            "tecnico_id": self.tecnico_id,
+            "tecnico": self.tecnico,
+            "auxiliar_id": self.auxiliar_id,
+            "auxiliar": self.auxiliar
         }
+
 
 #teste    
 if __name__ == "__main__":
@@ -27,31 +73,20 @@ if __name__ == "__main__":
     # criar tabelas
     db.create_all()
 
-    # teste da classe Pessoa
-    t1 = Time(nome = "FC Bayern München", esporte = "Futebol")
-    t2 = Time(nome = "SESI Blumenau", esporte = "Vôlei")
-    t3 = Time(nome = "CR Flamengo", esporte = "Futebol")   
-    t4 = Time(nome = "Sesc-RJ", esporte = "Vôlei")            
-    t5 = Time(nome = "Sorocaba", esporte = "Futsal")    
+    tecnico = Tecnico(nome = "Hans-Dieter Flick")
+    auxiliar_tecnico = Auxiliar(nome = "Tite")
+    time = Time(nome = "FC Bayern München", esporte = "Futebol", tecnico = tecnico, auxiliar = auxiliar_tecnico)  
 
     # persistir
-    db.session.add(t1)
-    db.session.add(t2)
-    db.session.add(t3)
-    db.session.add(t4)
-    db.session.add(t5)
+    db.session.add(tecnico)
+    db.session.add(auxiliar_tecnico)
+    db.session.add(time)
     db.session.commit()
-    
-    # exibir a pessoa
-    print(t1)
-    print(t2)
-    print(t3)
-    print(t4)
-    print(t5)
 
-    # exibir a pessoa no format json
-    print(t1.json())
-    print(t2.json())
-    print(t3.json())
-    print(t4.json())
-    print(t5.json())
+    # exibir no format json
+    print(auxiliar_tecnico)
+    print(auxiliar_tecnico.json())
+    print(tecnico)
+    print(tecnico.json())
+    print(time)
+    print(time.json())
