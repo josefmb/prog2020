@@ -5,7 +5,7 @@ class Tecnico(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(254))
 
-    contrato = db.relationship("Time", back_populates="tecnico")
+    contrato_tecnico = db.relationship("Instituicao", back_populates="tecnico")
 
     def __str__(self):
         return str(self.id)+") "+ self.nome
@@ -14,25 +14,7 @@ class Tecnico(db.Model):
     def json(self):
         return {
             "id": self.id,
-            "nome": self.nome,
-        }
-
-
-class Auxiliar(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(254))
-
-    contrato = db.relationship("Time", back_populates="auxiliar")
-
-    def __str__(self):
-        return str(self.id)+") "+ self.nome
-
-    #Método que transforma a classe em json
-    def json(self):
-        return {
-            "id": self.id,
-            "nome": self.nome,
+            "nome": self.nome
         }
 
 class Time(db.Model):
@@ -41,13 +23,10 @@ class Time(db.Model):
     nome = db.Column(db.String(254))
     esporte = db.Column(db.String(254))
 
-    tecnico_id = db.Column(db.ForeignKey(Tecnico.id), nullable=False)
-    tecnico = db.relationship("Tecnico", back_populates="contrato")
+    pertence = db.relationship("Instituicao", back_populates="time")
 
-    auxiliar_id = db.Column(db.ForeignKey(Auxiliar.id), nullable=False)
-    auxiliar = db.relationship("Auxiliar", back_populates="contrato")
     #Método para expressar o time em formto texto
-    
+
     def __str__(self):
         return str(self.id)+") "+ self.nome + ", " + self.esporte
 
@@ -56,13 +35,33 @@ class Time(db.Model):
         return {
             "id": self.id,
             "nome": self.nome,
-            "esporte": self.esporte,
-            "tecnico_id": self.tecnico_id,
-            "tecnico": self.tecnico,
-            "auxiliar_id": self.auxiliar_id,
-            "auxiliar": self.auxiliar
+            "esporte": self.esporte
         }
 
+class Instituicao(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(254))
+
+    tecnico_id = db.Column(db.ForeignKey(Tecnico.id), nullable=False)
+    tecnico = db.relationship("Tecnico", back_populates="contrato_tecnico")
+
+    time_id = db.Column(db.ForeignKey(Time.id), nullable=False)
+    time = db.relationship("Time", back_populates="pertence")
+
+    def __str__(self):
+        return f"{self.id}) {self.nome}; {self.tecnico}; {self.time}"
+
+    #Método que transforma a classe em json
+    def json(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+            "tecnico_id": self.tecnico_id,
+            "tecnico": self.tecnico,
+            "time_id": self.time_id,
+            "time": self.time
+        }
 
 #teste    
 if __name__ == "__main__":
@@ -74,19 +73,20 @@ if __name__ == "__main__":
     db.create_all()
 
     tecnico = Tecnico(nome = "Hans-Dieter Flick")
-    auxiliar_tecnico = Auxiliar(nome = "Tite")
-    time = Time(nome = "FC Bayern München", esporte = "Futebol", tecnico = tecnico, auxiliar = auxiliar_tecnico)  
-
-    # persistir
     db.session.add(tecnico)
-    db.session.add(auxiliar_tecnico)
+
+    time = Time(nome = "Flamengo", esporte="Futebol")
     db.session.add(time)
+
+    instituicao = Instituicao(nome = "Flamengo", tecnico = tecnico, time = time)  
+    db.session.add(instituicao)
+
     db.session.commit()
 
     # exibir no format json
-    print(auxiliar_tecnico)
-    print(auxiliar_tecnico.json())
-    print(tecnico)
-    print(tecnico.json())
     print(time)
     print(time.json())
+    print(tecnico)
+    print(tecnico.json())
+    print(instituicao)
+    print(instituicao.json())
